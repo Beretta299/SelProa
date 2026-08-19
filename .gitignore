@@ -1,0 +1,54 @@
+# ── secrets ──────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# ── python ───────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+*.egg-info/
+
+# ── node ─────────────────────────────────
+node_modules/
+.vite/
+build/
+*.tsbuildinfo
+
+# ── kotlin / gradle ──────────────────────
+.gradle/
+build/
+!src/**/build/
+local.properties
+
+# ── terraform ────────────────────────────
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+.terraform.lock.hcl
+
+# ── data and artefacts ───────────────────
+*.db
+*.sqlite3
+data/
+corpus/
+photos/
+*.log
+
+# ── editors / os ─────────────────────────
+.DS_Store
+.idea/
+.vscode/
+*.swp
