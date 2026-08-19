@@ -4,11 +4,11 @@ plugins {
     application
 }
 
-group = "pitwall.market"
+group = "selproa.registry"
 version = "0.1.0"
 
 application {
-    mainClass.set("pitwall.market.ApplicationKt")
+    mainClass.set("selproa.registry.ApplicationKt")
 }
 
 kotlin { jvmToolchain(21) }
@@ -44,7 +44,7 @@ tasks.test { useJUnitPlatform() }
 tasks.register<JavaExec>("seed") {
     group = "application"
     description = "Generate the mock market"
-    mainClass.set("pitwall.market.SeedKt")
+    mainClass.set("selproa.registry.SeedKt")
     classpath = sourceSets["main"].runtimeClasspath
-    environment("MARKET_DB_URL", System.getenv("MARKET_DB_URL") ?: "jdbc:postgresql://localhost:5433/market")
+    environment("REGISTRY_DB_URL", System.getenv("REGISTRY_DB_URL") ?: "jdbc:postgresql://localhost:5433/registry")
 }

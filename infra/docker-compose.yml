@@ -1,33 +1,33 @@
 name: pitwall
 
 services:
-  market-db:
+  registry-db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: market
-      POSTGRES_PASSWORD: market
-      POSTGRES_DB: market
+      POSTGRES_USER: registry
+      POSTGRES_PASSWORD: registry
+      POSTGRES_DB: registry
     ports: ["5433:5432"]
-    volumes: [market-db-data:/var/lib/postgresql/data]
+    volumes: [registry-db-data:/var/lib/postgresql/data]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U market -d market"]
+      test: ["CMD-SHELL", "pg_isready -U registry -d registry"]
       interval: 3s
       timeout: 3s
       retries: 20
 
-  market-api:
+  registry-api:
     build:
-      context: ../market-api
+      context: ../registry-api
       dockerfile: Dockerfile
     environment:
-      MARKET_API_PORT: 8081
-      MARKET_DB_URL: jdbc:postgresql://market-db:5432/market
-      MARKET_DB_USER: market
-      MARKET_DB_PASSWORD: market
+      REGISTRY_API_PORT: 8081
+      REGISTRY_DB_URL: jdbc:postgresql://registry-db:5432/registry
+      REGISTRY_DB_USER: registry
+      REGISTRY_DB_PASSWORD: registry
     ports: ["8081:8081"]
     depends_on:
-      market-db:
+      registry-db:
         condition: service_healthy
 
 volumes:
-  market-db-data:
+  registry-db-data:

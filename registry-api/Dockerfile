@@ -6,6 +6,6 @@ RUN gradle installDist --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY --from=build /src/build/install/market-api ./
+COPY --from=build /src/build/install/registry-api ./
 EXPOSE 8081
-ENTRYPOINT ["/app/bin/market-api"]
+ENTRYPOINT ["/app/bin/registry-api"]

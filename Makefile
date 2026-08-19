@@ -24,7 +24,7 @@ types: ## Type check (strict mypy, tsc)
 test: ## Unit and integration tests (testcontainers)
 	@echo "not yet — chapter 8"
 
-contract: ## Contract tests against the real market-api container
+contract: ## Contract tests against the real registry-api container
 	@echo "not yet — chapter 13"
 
 evals: ## The evaluation suite — retrieval, answers, tool calls, extraction

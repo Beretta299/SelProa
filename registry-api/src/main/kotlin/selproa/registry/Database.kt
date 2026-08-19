@@ -1,4 +1,4 @@
-package pitwall.market
+package selproa.registry
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource

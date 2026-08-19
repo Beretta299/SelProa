@@ -1,15 +1,20 @@
 # SelProa
 
-A copilot for buying and running cars.
+A vehicle history and condition service, keyed by VIN.
 
-It reads workshop manuals and service bulletins and answers with the page it came from, scores used-car
-listings for what a knowledgeable buyer would spot, reads the listing photos, and can contact a seller
-on your behalf — but only after you have read and approved the message.
+Give it a VIN and it tells you what the car is, what has happened to it, what is known to go wrong
+with that model, and what to check before you buy. It reads the registry, inspection, insurer and
+customs records; cross-checks them for odometer rollback, cloned VINs and laundered write-offs; and
+answers questions from workshop manuals and service bulletins with the page it came from.
 
-> Built over 12 weeks as a full-time project. Course materials and the chapter plan live outside this
-> repo. Working name in those materials is *Pitwall*.
+It can also refer you to a partner garage for a pre-purchase inspection — but only after you have
+read and approved what gets sent.
 
-**Status:** week 1, scaffolding. Nothing works yet.
+> Built over 12 weeks as a full-time project. Course materials and the chapter plan live outside
+> this repo. See `docs/decisions/0004-vin-report-not-marketplace.md` for why this is not a marketplace.
+
+**Status:** week 1. `registry-api` runs: 20,000 vehicles, 260k history events, 240 garages, and
+74 planted fraud cases across five patterns. Nothing else exists yet.
 
 ---
 
@@ -17,9 +22,9 @@ on your behalf — but only after you have read and approved the message.
 
 | Directory | What it is | Stack |
 |---|---|---|
-| `market-api/` | A mock used-car marketplace to integrate against — listings, VIN data, price history, a live feed, and deliberate faults | Kotlin, Ktor, Postgres |
-| `pitwall-api/` | The service: auth, jobs, streaming, retrieval, the agent loop, the approval gate, evals | Python, FastAPI, pgvector |
-| `dashboard/` | Chat with citations, garage, watchlist, flagged listings, approval inbox | React, TypeScript, Vite |
+| `registry-api/` | A mock of the upstream data sources — registry, inspections, insurer claims, customs, plus the garage network. Built with deliberate faults | Kotlin, Ktor, Postgres |
+| `selproa-api/` | The service: auth, jobs, streaming, retrieval, report generation, the agent loop, the approval gate, evals | Python, FastAPI, pgvector |
+| `dashboard/` | VIN lookup, the report, saved vehicles, the approval inbox | React, TypeScript, Vite |
 | `infra/` | Local compose, deployment, later Terraform and CI | Docker, Caddy, Terraform |
 | `evals/` | Golden sets and the evaluation harness | Python |
 | `docs/` | Spec, architecture, ADRs, API contract, eval reports | Markdown |

@@ -6,8 +6,7 @@
 ## Diagram
 
 > Services, data stores, background jobs, and **every boundary where something untrusted enters**.
-> Untrusted here means: listing descriptions, uploaded photos and their metadata, and any document
-> text. Mark those explicitly — chapter 30 depends on knowing where they are.
+> Untrusted here means: any document text, and anything a user or a partner garage supplies. Mark those explicitly — chapter 30 depends on knowing where they are.
 
 ```
 (replace with your drawing — excalidraw export, mermaid, or ASCII)
@@ -17,8 +16,8 @@
 
 | Component | Owns | Talks to |
 |---|---|---|
-| market-api | | |
-| pitwall-api | | |
+| registry-api | | |
+| selproa-api | | |
 | worker | | |
 | dashboard | | |
 | Postgres | | |

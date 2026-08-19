@@ -64,8 +64,12 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 # Project: SelProa
 
-A copilot for buying and running cars. Built over 12 weeks as a learning project — the point is
-that **Dmytro learns this**, not that it gets finished fast.
+A vehicle history service keyed by VIN — decode, cross-check the registry/inspection/insurer record
+for fraud, answer model-specific questions from workshop manuals, and refer to a partner garage for a
+pre-purchase inspection. Built over 12 weeks as a learning project — the point is that
+**Dmytro learns this**, not that it gets finished fast.
+
+It is deliberately **not** a marketplace; see `docs/decisions/0004-vin-report-not-marketplace.md`.
 
 ## What that changes about how you help
 
@@ -78,10 +82,10 @@ that **Dmytro learns this**, not that it gets finished fast.
 
 ## Things that look like bugs and are not
 
-- **`market-api` has three deliberate faults** — inconsistent field naming, page-size drift, and
-  HTTP 200 with an empty body on a sold listing. See `docs/faults.md`. **Never fix them.**
+- **`registry-api` has three deliberate faults** — inconsistent field naming, page-size drift, and
+  HTTP 200 with an empty body on a referral to a lapsed partner garage. See `docs/faults.md`. **Never fix them.**
   Chapter 13 exists to defend against them.
-- **`market-api/seed-truth.json` is gitignored on purpose.** It is the ground truth for the planted
+- **`registry-api/seed-truth.json` is gitignored on purpose.** It is the ground truth for the planted
   fraud. Do not read it, do not let any service read it, and do not put it anywhere a retrieval
   corpus could reach. Regenerate with `./gradlew seed` (deterministic on `SEED` in `Seed.kt`).
 
@@ -93,12 +97,12 @@ colima start                                    # docker runtime
 docker compose -f infra/docker-compose.yml up -d
 ```
 
-Postgres is on **5433** (not 5432), `market-api` on **8081**.
+Postgres is on **5433** (not 5432), `registry-api` on **8081**.
 
 ## Conventions
 
 - One toolchain per service. Nothing shared between them except the OpenAPI schema and the Makefile.
-- Migrations are Flyway SQL in `market-api/src/main/resources/db/migration`. Never edit an applied
+- Migrations are Flyway SQL in `registry-api/src/main/resources/db/migration`. Never edit an applied
   migration; add a new one.
 - Decisions worth defending go in `docs/decisions/` as ADRs, using `0000-template.md`.
 - `make check` must stay identical locally and in CI.

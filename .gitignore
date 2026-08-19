@@ -57,4 +57,4 @@ photos/
 # Regenerate with `./gradlew seed` (deterministic on SEED in Seed.kt).
 # Kept out of the repo so it can never be ingested by pitwall-api or end up in
 # a retrieval corpus. Do not open it until chapter 25.
-market-api/seed-truth.json
+registry-api/seed-truth.json
