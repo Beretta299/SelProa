@@ -11,6 +11,12 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.websocket.*
+import io.ktor.websocket.*
+import kotlinx.coroutines.delay
+import kotlinx.serialization.encodeToString
+import kotlin.time.Duration.Companion.seconds
+import kotlin.random.Random
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 
@@ -23,15 +29,19 @@ fun main() {
     appLog.info("migrated; starting on :{}", config.port)
 
     embeddedServer(Netty, port = config.port, host = "0.0.0.0") {
-        module(Repository(ds))
+        module(Repository(ds), Feed(ds))
     }.start(wait = true)
 }
 
-fun Application.module(repo: Repository) {
+fun Application.module(repo: Repository, feed: Feed) {
     install(ContentNegotiation) {
         json(Json { prettyPrint = false; ignoreUnknownKeys = true; encodeDefaults = true })
     }
     install(CallLogging)
+    install(WebSockets) {
+        pingPeriod = 20.seconds
+        timeout = 60.seconds
+    }
     install(StatusPages) {
         exception<Throwable> { call, cause ->
             appLog.error("unhandled", cause)
@@ -42,6 +52,17 @@ fun Application.module(repo: Repository) {
     routing {
         get("/health") {
             call.respond(mapOf("status" to "ok"))
+        }
+
+        /** Live market events. Arrives on no fixed schedule, like the real thing. */
+        webSocket("/feed") {
+            val json = Json { encodeDefaults = true }
+            val rng = Random(System.nanoTime())
+            while (true) {
+                delay(rng.nextLong(1_500, 6_000))
+                val event = feed.next(rng) ?: continue
+                send(Frame.Text(json.encodeToString(FeedEvent.serializer(), event)))
+            }
         }
 
         get("/listings") {

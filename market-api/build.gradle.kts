@@ -39,3 +39,12 @@ dependencies {
 }
 
 tasks.test { useJUnitPlatform() }
+
+// ./gradlew seed  — regenerates the market. Deterministic on SEED in Seed.kt.
+tasks.register<JavaExec>("seed") {
+    group = "application"
+    description = "Generate the mock market"
+    mainClass.set("pitwall.market.SeedKt")
+    classpath = sourceSets["main"].runtimeClasspath
+    environment("MARKET_DB_URL", System.getenv("MARKET_DB_URL") ?: "jdbc:postgresql://localhost:5433/market")
+}
