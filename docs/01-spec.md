@@ -12,6 +12,14 @@ what that car actually is, what has happened to it, whether the records contradi
 selling it and what else they are selling, and what a mechanic should look at before you hand over
 money. Every statement it makes points at the record it came from.
 
+It speaks **Polish, English and Ukrainian** — the three languages of the people actually buying used
+cars in Poland.
+
+The basic report is free. A **paid report** adds what the manufacturer built into that specific car:
+the factory options decoded from the VIN, so you can tell whether the "full option" advert is true.
+Revenue also comes from the partner network — independent garages and local dealerships who take
+pre-purchase inspection work from report readers and carry the service in return.
+
 ## Not building
 
 - **Prices and valuation.** Not "is this a fair price", not market comparisons. There are ten tools
@@ -24,11 +32,18 @@ money. Every statement it makes points at the record it came from.
 - **OBD-II or live telemetry.** Requires hardware in the car; you do not own the car yet.
 - **A mobile app.** ← *the one I am least sure about, given seven years of Android. Cut for now
   because the roles you are applying to assume web. Revisit at week 10 if there is slack.*
-- **Payments and subscriptions.** One free report per look-up. The revenue question is the garage
-  referral, and that is a partnership, not a checkout.
+- **A payment processor, for now.** The paid tier is real, but in the first 12 weeks it is an
+  *entitlement* — the service knows who is entitled to what, meters it and gates it. Wiring Stripe is
+  three or four days of plumbing that teaches nothing this project is for, and the entitlement layer
+  is needed either way. Decide at week 7, when there is something worth charging for. ← *decision
+  deferred deliberately; the trigger is a real user asking to pay.*
 - **Multi-user accounts, teams, sharing.** One person, one login.
 - **Automated advert scraping at scale.** Legal exposure, unstable, unpublishable.
-- **Languages beyond Polish and English.**
+- **Languages beyond Polish, English and Ukrainian.**
+- **Translating the source documents.** Manuals and bulletins stay in the language they were written
+  in. Questions are translated for retrieval, answers are written in the reader's language, and every
+  citation points at the original page. Translating a corpus would make every citation a claim about
+  a translation.
 - **Anything that writes to a registry.** Read-only against every upstream source, except the garage
   referral.
 
@@ -57,24 +72,49 @@ note, not a requirement.
 10. Before any request reaches a garage, read the exact message, edit it, and approve or refuse it.
     Nothing leaves without that.
 11. Save a VIN and be told when a new record appears against it.
-12. Photograph the VIN plate or the dashboard, and have the VIN or the odometer read from the picture
-    and checked against the records. ← *this is the form the vision work takes now; it replaces the
-    listing-photo analysis and is more useful.*
+12. Read the whole report, ask questions and receive answers in Polish, English or Ukrainian,
+    whichever was chosen — including when the underlying manual is in a different language.
+13. Pay for the advanced report and see the factory options the VIN was actually built with, so an
+    advert claiming "full options" can be checked against what left the factory.
+14. Photograph the VIN plate or the dashboard, and have the VIN or the odometer read from the picture
+    and checked against the records. ← *this is the form the vision work takes now. It is also the
+    first thing I would cut if the three languages overrun — see the budget note below.*
 
 ## Phases
 
 | Weeks | Deliverables | Demoable at the end? |
 |---|---|---|
 | 1–4 | Registry mock with planted fraud · service with auth, jobs, streaming · report v1: decode, timeline, rollback detection · deployed behind a password | **Yes — applications go out in week 5** |
-| 5–7 | Seller analysis · retrieval over manuals and bulletins with citations · the agent and its tools | Yes, meaningfully better |
-| 8–9 | Fraud scoring across the whole registry · VIN and odometer from photographs · the approval gate · evals · injection defence | Yes |
-| 10–11 | Terraform, CI with an eval gate, metrics and alerts · performance pass · second demo | Yes |
+| 5–7 | Seller analysis · retrieval over manuals and bulletins with citations · cross-lingual questions and answers · the agent and its tools | Yes, meaningfully better |
+| 8–9 | Fraud scoring across the whole registry · factory-option decoding behind the entitlement gate · the approval gate · evals in all three languages · injection defence | Yes |
+| 10–11 | Terraform, CI with an eval gate, metrics and alerts · performance pass · VIN and odometer from photographs, if there is room · second demo | Yes |
 | 12 | Ten real users, then act on what they say | — |
 
 ## What I demo in week 5
 
 Paste a VIN, watch the report stream in, and show the odometer going backwards between two dated
 inspection records — with both records on screen.
+
+## The budget these answers cost
+
+Three languages and a paid tier are not free, and the twelve weeks were already full. My estimate:
+
+| Work | Cost |
+|---|---|
+| UI strings in three languages | ~1.5 days |
+| Cross-lingual retrieval, generation and per-language evals | ~3 days |
+| Entitlement layer, metering and gating | ~1.5 days |
+| Factory-option decoding, mock and paid gate | ~1 day |
+
+About seven working days, or a week and a half. It comes out of the photograph work in week 11 and
+the slack in the performance pass. If it overruns, requirement 14 is what goes — reading a VIN from a
+photo is a nice demo, and answering a Ukrainian speaker's question about a German manual is a
+product.
+
+**The part that is genuinely hard is not the translation.** It is that a question in Ukrainian has to
+retrieve from a manual written in German and return an answer in Ukrainian that cites the German
+page — and then be evaluated for whether the figure survived two language boundaries intact. That is
+one of the more interesting problems in the whole project and it is worth the three days.
 
 ## What I do not control
 
@@ -85,10 +125,24 @@ inspection records — with both records on screen.
 | Anthropic API key | Week 5 | Nothing else can start; get it in week 1 |
 | A real data source (vPIC, recalls) | Week 7 | The mock carries the demo; the real source is a chapter, not a dependency |
 
-## Open questions
+## Answered
 
-- Is the referral genuinely the business model, or is it a story to justify the approval gate? Both
-  are legitimate — but decide, because it changes what week 12's users are asked to react to.
-- One free report, or a limit? A public demo with an unlimited free look-up and a metered model API
-  behind it is a bill waiting to happen. Chapter 31 caps it; something has to cap it before then.
-- Polish or English first? The users in week 12 will be Polish. The interviewers will not be.
+**The referral is real.** It is one half of an integration with existing businesses — independent
+garages and local dealerships — who receive inspection work and carry the service in return. Week 12's
+users get asked about it as a product, not as a hypothetical.
+
+**Freemium.** The basic report is free; the advanced report is paid, and the first thing behind that
+line is factory-option decoding from the VIN. That also solves the spend problem: the expensive work
+sits behind the tier that pays for it.
+
+**Polish, English and Ukrainian.** Not a translation layer bolted on at the end — see the budget above.
+
+## Still open
+
+- **Does the free report cost you money before anyone pays?** A public demo with unlimited free
+  look-ups and a metered model API behind it is a bill waiting to happen. Something has to cap the
+  free tier before chapter 31 arrives. Suggest: free look-ups are rate-limited per IP and the model
+  work in the free report is cached per VIN, so the second person to check a car costs nothing.
+- **What else goes behind the paid line?** Factory options is one feature, not a tier. Candidates:
+  the full event timeline versus a summary, the seller analysis, the cross-check against foreign
+  registries, and the exportable PDF a buyer can show a seller.
