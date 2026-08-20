@@ -17,7 +17,10 @@ claim. Everything below marked **verified** was tested from this machine.
 | Teletransmission (art. 80c ust. 7) | Restricted by statute to entities with statutory tasks — bailiffs, paid-parking authorities. |
 | EUCARIS | A treaty message exchange **between national authorities**, not a database. Not available to private companies at any price. |
 
-**Verified trap.** The CEPiK API *accepts* a `vin=` parameter and **silently ignores it**:
+**Verified trap.** The CEPiK API *accepts* a `vin=` parameter and **silently ignores it** whenever the
+mandatory `wojewodztwo` + `data-od` + `data-do` parameters are present. Omit those and you get a 404
+for the missing mandatory arguments, which is why this is sometimes reported as "404" — the 404 is
+about the mandatory params, not the VIN. The dangerous path is the one that looks correct:
 
 ```
 GET /pojazdy?wojewodztwo=02&data-od=20240101&data-do=20240131&limit=5&vin=THISISNOTAREALVIN
@@ -66,9 +69,10 @@ not generous, and only available with resale rights.
 | **NHTSA vPIC** | VIN structure decode, US-market. Public domain, no key, bulk DB downloadable | **Free and redistributable — but see the caveat below** |
 | **NHTSA recalls** | US recall campaigns by make/model/year | Free; blind to EU-only campaigns |
 | **German KBA recalls** | EU recall campaigns for the brands NHTSA misses | Free landing page confirmed; **the bulk CSV URL I was given 404s — the download path needs finding before this is actionable** |
-| **Netherlands RDW** | Per-plate recall chain, verified end to end (`t49b-isb7` → `referentiecode_rdw` → `j9yg-7rg9`) | Free and proven — but keyed by **plate**, not VIN |
-| **Ukraine** | Open registry plus a National Police stolen-vehicle join | Free; directly relevant given the Ukrainian-language tier |
-| **UK MOT history** | Full odometer series, defects, plate at test — the richest per-vehicle set in Europe | Free to query; **redistribution rights unresolved** |
+| **Netherlands RDW** | 16.8M vehicles; per-plate recall chain verified end to end (`t49b-isb7` → `referentiecode_rdw` → `j9yg-7rg9`); **290,784 cars flagged `Onlogisch`** on odometer | Free and proven, but keyed by **plate**, not VIN (`chassisnummer` returns 400). Odd licence: CC0 that *forbids* attributing the data to RDW |
+| **EU Safety Gate** | ~7,200 vehicle alerts, 2005–2026, CC0, via the weekly-report XML | Free. **Not VIN-indexed** — VINs appear only as free-text ranges in descriptions, and a VIN inside a stated range does not match. Use it as a recall corpus, not a lookup |
+| **Ukraine** | Open registry with **unmasked VINs**, CC-BY, joinable to the National Police wanted list — 84 confirmed stolen-vehicle VIN matches against the 2025 registry | Free, verified, and the best per-vehicle open data found anywhere. Directly relevant to the Ukrainian-language tier |
+| **UK MOT history** | Full odometer series, defects, plate at test — the richest per-vehicle set in Europe | Free to query; **whether DVSA permits displaying it in a public product is unverified, and it gates the dataset**. Answer this before designing around it |
 | CEPiK Open API | Aggregate registration statistics | Free, and useless per-vehicle |
 
 ### Verified caveat on vPIC — correcting an earlier claim
@@ -177,12 +181,21 @@ have been.
 **The commercial conversation is a week-12 activity, not a week-7 one.** Approaching autoDNA for
 resale terms makes sense once there is a working product to show them.
 
+**Poland is the weakest link, and that is worth sitting with.** Your home market has the most closed
+registry of any country examined, and Germany — the main origin of Polish imports — has no public
+per-vehicle API at all. The two datasets most commercially important to this product are precisely
+the two that no free source supplies. Meanwhile Ukraine, the market you added for language reasons,
+turns out to have the best open vehicle data found anywhere: unmasked VINs under CC-BY, joinable to
+the police wanted list. That is an argument for taking the Ukrainian tier more seriously than a
+translation feature.
+
 ---
 
 ## Not verified
 
 - The KBA bulk CSV download path (the URL supplied 404s)
-- UK MOT redistribution rights
+- Whether DVSA permits displaying UK MOT data in a public product — the single highest-value
+  unanswered question in this document
 - carVertical's VAT treatment at Polish checkout
 - carQ.pl's data sourcing — it publishes Polish registry data at prices far below anything else here,
   and its `/regulamin` returns 404. Understand how before building on it.
