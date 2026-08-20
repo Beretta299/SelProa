@@ -143,6 +143,7 @@ sits behind the tier that pays for it.
   look-ups and a metered model API behind it is a bill waiting to happen. Something has to cap the
   free tier before chapter 31 arrives. Suggest: free look-ups are rate-limited per IP and the model
   work in the free report is cached per VIN, so the second person to check a car costs nothing.
+  You need to check it if it is, if it's not free we should make it paid. MAke a research in internet, and come back.
 - **What else goes behind the paid line?** Factory options is one feature, not a tier. Candidates:
   the full event timeline versus a summary, the seller analysis, the cross-check against foreign
-  registries, and the exportable PDF a buyer can show a seller.
+  registries, and the exportable PDF a buyer can show a seller. Let's find everything that we can find for car from vin-code, to make sure what we can do. MAke a research in internet, and come back.
