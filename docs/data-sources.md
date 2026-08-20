@@ -90,6 +90,70 @@ rather than papered over.
 
 ---
 
+## Factory options — the paid feature, and why it is the hard one
+
+The proposed first paid feature is "what options was this specific car built with". It is a good
+product idea and it is the **most tightly licensed data in this entire document**.
+
+### What a VIN decoder returns versus what a build sheet returns
+
+| From the 17 characters alone | Only from the manufacturer's build record |
+|---|---|
+| Make, model family, model year, plant, body, engine family | The actual option list: which seats, which lights, which suspension, which paint code, production date, exact trim |
+
+The first is arithmetic on the VIN. The second is a database lookup inside the manufacturer, and it
+is the thing an advert claiming "full options" can be checked against.
+
+### Every manufacturer gates it, in near-identical language
+
+VAG's erWin portal is the clearest case. Vehicle data became **company-only** — Škoda ended
+private-customer access on 18 December 2025 — and the disclaimer adds the clause that matters most:
+
+> *"data from erWin must not be processed if there is no order for the vehicle."*
+
+That is decisive. It licenses the data for servicing a car physically in front of you. Looking up an
+arbitrary advertised VIN breaches it **even with zero automation**, so "we'll do it by hand" is not a
+workaround. Stellantis prohibits "integrating in products and/or services"; Ford bars "mechanized or
+algorithmic methods"; DAT restricts to "repair-cost calculation and/or vehicle valuation". The
+convergence is not coincidence — it is the industry's settled position on exactly this product.
+
+Pricing is not the barrier. VW erWin is €3,420/year for **unlimited** lookups, Škoda €2,800.80. Per
+VIN that is nothing. **Eligibility and terms are the barrier.**
+
+The competitor whose own FAQ says it plainly:
+
+> *"Manufacturers don't give anyone API access to option level data tied to a specific VIN — not us,
+> not the big platforms, not anyone."*
+
+Sites selling per-VIN VAG option reports at €12.99 exist and their output is unmistakably erWin
+data — which means they are almost certainly operating on a licence breach. **Do not build on them.**
+Inheriting somebody else's breach is not a supply chain.
+
+### Where options *are* licensable
+
+| Route | Coverage | Price | Catch |
+|---|---|---|---|
+| **OneAutoAPI** | Mercedes, Ford, Opel/Vauxhall, Volvo | €1.95 → €0.85/VIN, Poland pricing published | **Not VAG, not BMW** — the two that dominate the Polish market |
+| **DAT Polska** | ~40 brands | €1.85/VIN | Terms restrict to repair costing and valuation — ask before integrating |
+| **Tradesoft / catcar RPO** | Opel, pre-2017 | ~$0.28/lookup | Narrow, but genuinely clean |
+| Bilateral licence with VW or Mercedes | First-party | negotiated | Slow, may be refused; the only durable route |
+
+**Ask "may this be consumer-facing?" before integrating anything.** That one question, asked first,
+is the difference between a product and a cease-and-desist.
+
+### Timing
+
+erWin is migrating to a fully authenticated platform with no public surface, and **Poland rolls over
+around mid-September 2026** — roughly five weeks out. Anything scoped against today's portals has a
+short shelf life.
+
+### Unresolved and worth a lawyer, not a scraper
+
+The **EU Data Act (Reg. 2023/2854)**, applicable since 12 September 2025, may strengthen third-party
+access to vehicle-related data. Nobody established whether it reaches factory build records. If it
+does, it changes the negotiating posture with every manufacturer above. Highest-leverage open
+question in this document.
+
 ## What this means for SelProa
 
 **The free tier cannot contain anything that costs money per lookup.** Everything genuinely valuable
@@ -122,3 +186,5 @@ resale terms makes sense once there is a working product to show them.
 - carVertical's VAT treatment at Polish checkout
 - carQ.pl's data sourcing — it publishes Polish registry data at prices far below anything else here,
   and its `/regulamin` returns 404. Understand how before building on it.
+- Whether the EU Data Act reaches factory build records
+- Whether OneAutoAPI and DAT permit consumer-facing use of option data

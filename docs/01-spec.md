@@ -75,7 +75,13 @@ note, not a requirement.
 12. Read the whole report, ask questions and receive answers in Polish, English or Ukrainian,
     whichever was chosen — including when the underlying manual is in a different language.
 13. Pay for the advanced report and see the factory options the VIN was actually built with, so an
-    advert claiming "full options" can be checked against what left the factory.
+    advert claiming "full options" can be checked against what left the factory. ← ***blocked on a
+    licence, not on code.*** Every manufacturer gates build data to the repair trade; VAG's terms
+    forbid processing it for a car you do not have an order for, which rules out manual fulfilment
+    too. Licensable today for Mercedes, Ford, Opel and Volvo via aggregators at €0.85–1.95/VIN —
+    but **not for VW, Audi, Škoda or BMW**, which are most of the Polish market. See
+    `docs/data-sources.md`. Do not build this until somebody answers "may this be consumer-facing?"
+    in writing.
 14. Photograph the VIN plate or the dashboard, and have the VIN or the odometer read from the picture
     and checked against the records. ← *this is the form the vision work takes now. It is also the
     first thing I would cut if the three languages overrun — see the budget note below.*
@@ -144,6 +150,8 @@ sits behind the tier that pays for it.
   free tier before chapter 31 arrives. Suggest: free look-ups are rate-limited per IP and the model
   work in the free report is cached per VIN, so the second person to check a car costs nothing.
   You need to check it if it is, if it's not free we should make it paid. MAke a research in internet, and come back.
-- **What else goes behind the paid line?** Factory options is one feature, not a tier. Candidates:
-  the full event timeline versus a summary, the seller analysis, the cross-check against foreign
-  registries, and the exportable PDF a buyer can show a seller. Let's find everything that we can find for car from vin-code, to make sure what we can do. MAke a research in internet, and come back.
+- **What else goes behind the paid line?** Now urgent, because factory options is licence-blocked for
+  the brands that matter. The candidates that cost tokens rather than licences, and are therefore
+  entirely ours to sell: the full event timeline versus a summary, the seller analysis, the
+  cross-source contradiction report, monitoring a saved VIN for new records, and the exportable PDF a
+  buyer can put in front of a seller. **Research done — see `docs/data-sources.md`.**
