@@ -23,11 +23,11 @@ fun main() {
     appLog.info("migrated; starting on :{}", config.port)
 
     embeddedServer(Netty, port = config.port, host = "0.0.0.0") {
-        module(Repository(ds))
+        module(Repository(ds), ds)
     }.start(wait = true)
 }
 
-fun Application.module(repo: Repository) {
+fun Application.module(repo: Repository, dsRef: javax.sql.DataSource) {
     install(ContentNegotiation) {
         json(Json { ignoreUnknownKeys = true; encodeDefaults = true })
     }
@@ -63,6 +63,26 @@ fun Application.module(repo: Repository) {
             val e = repo.event(id)
                 ?: return@get call.respond(HttpStatusCode.NotFound, ApiError("not_found"))
             call.respond(e)
+        }
+
+        /**
+         * Seller analysis. The caller supplies the number from the advert; we
+         * hash it and look it up. The plaintext never touches the database, and
+         * the response identifies the seller only by the last three digits.
+         */
+        get("/sellers") {
+            val phone = call.request.queryParameters["phone"]
+                ?: return@get call.respond(HttpStatusCode.BadRequest, ApiError("phone_required"))
+            val profile = repo.sellerByPhone(dsRef, phone)
+                ?: return@get call.respond(HttpStatusCode.NotFound, ApiError("seller_not_seen"))
+            call.respond(profile)
+        }
+
+        get("/vehicles/{vin}/sellers") {
+            val vin = call.parameters["vin"].orEmpty()
+            if (repo.vehicle(vin) == null)
+                return@get call.respond(HttpStatusCode.NotFound, ApiError("vin_not_found"))
+            call.respond(mapOf("phone_suffixes" to repo.contactsForVin(dsRef, vin)))
         }
 
         get("/garages") {

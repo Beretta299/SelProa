@@ -89,3 +89,24 @@ data class ReferralRequest(
 
 @Serializable
 data class ReferralAccepted(val referral_id: Long, val status: String, val duplicate: Boolean)
+
+@Serializable
+data class SellerProfile(
+    val phone_suffix: String,
+    val claimed_kind: String,
+    val first_seen_on: String,
+    val last_seen_on: String,
+    val vehicles_advertised: Int,
+    val cities: List<String>,
+    val vehicles: List<SellerVehicle>,
+)
+
+@Serializable
+data class SellerVehicle(
+    val vin: String,
+    val make: String,
+    val model: String,
+    val model_year: Int,
+    val seen_on: String,
+    val city: String,
+)

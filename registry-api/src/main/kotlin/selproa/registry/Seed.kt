@@ -83,6 +83,7 @@ class Seeder(private val ds: DataSource, private val rng: Random = Random(SEED))
         impossibleRates(pick(12))
 
         write(cars)
+        sellers(cars)
         return planted
     }
 
@@ -245,12 +246,104 @@ class Seeder(private val ds: DataSource, private val rng: Random = Random(SEED))
             "${jumped - prev.odo!!}km between ${prev.on} and ${e.on}, about ${(jumped - prev.odo!!) / days}km per day")
     }
 
+    // ── sellers ───────────────────────────────────────────────────────────
+
+    /**
+     * Who advertised what.
+     *
+     * Most private sellers appear once or twice. Dealers appear often. The
+     * interesting cases are the ones in between: a number claiming to be private
+     * with thirty cars, and a number whose cars are disproportionately dirty.
+     * Neither is visible from a single VIN, which is the point.
+     */
+    private fun sellers(cars: List<Car>) = ds.use { c ->
+        val vinOf = { car: Car -> forged[car] ?: car.vin }
+        val dirty = planted.map { it.vin }.toSet()
+        val dirtyCars = cars.filter { vinOf(it) in dirty }.toMutableList()
+        val cleanCars = cars.filter { vinOf(it) !in dirty }.shuffled(rng).toMutableList()
+
+        data class Contact(val phone: String, val kind: String, val vins: List<String>, val cities: List<Int>)
+        val contacts = mutableListOf<Contact>()
+
+        fun phone() = "+48${rng.nextInt(500, 899)}${"%03d".format(rng.nextInt(0, 1000))}${"%03d".format(rng.nextInt(0, 1000))}"
+        fun takeClean(n: Int) = (0 until minOf(n, cleanCars.size)).map { cleanCars.removeFirst() }.map(vinOf)
+
+        // Three rings: a number claiming to be private whose cars are mostly frauds.
+        repeat(3) {
+            val ring = (0 until minOf(rng.nextInt(6, 10), dirtyCars.size)).map { dirtyCars.removeFirst() }.map(vinOf)
+            if (ring.isEmpty()) return@repeat
+            val padding = takeClean(rng.nextInt(1, 4))
+            val p = phone()
+            contacts += Contact(p, "private", ring + padding, listOf(rng.nextInt(0, CITIES.size)))
+            planted += Planted(p, "seller_fraud_ring",
+                "number ending ${p.takeLast(3)} advertised ${ring.size + padding.size} cars, " +
+                    "${ring.size} of which carry a history problem")
+        }
+
+        // Unregistered dealers: claimed private, far too many cars, spread over cities.
+        repeat(6) {
+            val vins = takeClean(rng.nextInt(14, 34))
+            if (vins.isEmpty()) return@repeat
+            val p = phone()
+            val cityIdx = (1..rng.nextInt(3, 7)).map { rng.nextInt(0, CITIES.size) }.distinct()
+            contacts += Contact(p, "private", vins, cityIdx)
+            planted += Planted(p, "unregistered_dealer",
+                "number ending ${p.takeLast(3)} advertised ${vins.size} cars across " +
+                    "${cityIdx.size} voivodeships while claiming to be a private seller")
+        }
+
+        // Ordinary traffic: real dealers, and private sellers with one or two cars.
+        repeat(40) {
+            val vins = takeClean(rng.nextInt(8, 30))
+            if (vins.isNotEmpty())
+                contacts += Contact(phone(), "dealer", vins, (1..rng.nextInt(1, 3)).map { rng.nextInt(0, CITIES.size) })
+        }
+        while (cleanCars.isNotEmpty() || dirtyCars.isNotEmpty()) {
+            val vins = (takeClean(rng.nextInt(1, 3)) +
+                (if (dirtyCars.isNotEmpty() && rng.nextInt(100) < 40) listOf(vinOf(dirtyCars.removeFirst())) else emptyList()))
+            if (vins.isEmpty()) break
+            contacts += Contact(phone(), "private", vins, listOf(rng.nextInt(0, CITIES.size)))
+        }
+
+        val ids = mutableMapOf<String, Long>()
+        c.prepareStatement(
+            """insert into seller_contacts (phone_sha256, phone_suffix, claimed_kind, first_seen_on, last_seen_on)
+               values (?,?,?,?,?) returning id"""
+        ).use { st ->
+            contacts.forEach { ct ->
+                st.setString(1, Phone.hash(ct.phone))
+                st.setString(2, Phone.suffix(ct.phone))
+                st.setString(3, ct.kind)
+                st.setDate(4, java.sql.Date.valueOf(today.minusDays(rng.nextLong(120, 900))))
+                st.setDate(5, java.sql.Date.valueOf(today.minusDays(rng.nextLong(0, 60))))
+                st.executeQuery().map { it.getLong("id") }.first().let { ids[ct.phone] = it }
+            }
+        }
+
+        c.prepareStatement(
+            """insert into advert_sightings (vin, contact_id, seen_on, city, voivodeship, source)
+               values (?,?,?,?,?,'aggregator') on conflict do nothing"""
+        ).use { st ->
+            contacts.forEach { ct ->
+                val id = ids[ct.phone]!!
+                ct.vins.forEach { vin ->
+                    val (city, voi) = CITIES[ct.cities.random(rng)]
+                    st.setString(1, vin); st.setLong(2, id)
+                    st.setDate(3, java.sql.Date.valueOf(today.minusDays(rng.nextLong(0, 400))))
+                    st.setString(4, city); st.setString(5, voi)
+                    st.addBatch()
+                }
+            }
+            st.executeBatch()
+        }
+    }
+
     // ── writing ───────────────────────────────────────────────────────────
 
     private fun write(cars: List<Car>) = ds.use { c ->
         c.autoCommit = false
         c.createStatement().use {
-            it.execute("truncate inspection_referrals, history_events, vehicles, garages restart identity cascade")
+            it.execute("truncate inspection_referrals, advert_sightings, seller_contacts, history_events, vehicles, garages restart identity cascade")
         }
 
         c.prepareStatement(

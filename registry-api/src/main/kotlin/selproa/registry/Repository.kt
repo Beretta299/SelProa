@@ -165,3 +165,51 @@ class Repository(private val ds: DataSource) {
         return java.time.LocalDate.parse(d) to id.toLong()
     }
 }
+
+/** Everything a report can say about the person advertising the car. */
+fun Repository.sellerByPhone(ds: javax.sql.DataSource, phone: String): SellerProfile? = ds.use { c ->
+    val hash = Phone.hash(phone)
+    val contact = c.prepareStatement(
+        "select id, phone_suffix, claimed_kind, first_seen_on, last_seen_on from seller_contacts where phone_sha256 = ?"
+    ).use { st ->
+        st.setString(1, hash)
+        st.executeQuery().map { rs ->
+            arrayOf(rs.getLong("id"), rs.getString("phone_suffix"), rs.getString("claimed_kind"),
+                rs.getDate("first_seen_on").toString(), rs.getDate("last_seen_on").toString())
+        }.firstOrNull()
+    } ?: return@use null
+
+    val id = contact[0] as Long
+    val vehicles = c.prepareStatement(
+        """select a.vin, v.make, v.model, v.model_year, a.seen_on, a.city
+           from advert_sightings a join vehicles v on v.vin = a.vin
+           where a.contact_id = ? order by a.seen_on desc limit 200"""
+    ).use { st ->
+        st.setLong(1, id)
+        st.executeQuery().map { rs ->
+            SellerVehicle(rs.getString("vin"), rs.getString("make"), rs.getString("model"),
+                rs.getInt("model_year"), rs.getDate("seen_on").toString(), rs.getString("city"))
+        }
+    }
+
+    SellerProfile(
+        phone_suffix = contact[1] as String,
+        claimed_kind = contact[2] as String,
+        first_seen_on = contact[3] as String,
+        last_seen_on = contact[4] as String,
+        vehicles_advertised = vehicles.size,
+        cities = vehicles.map { it.city }.distinct().sorted(),
+        vehicles = vehicles,
+    )
+}
+
+/** The contacts that have advertised this VIN. Used to reach the seller from a report. */
+fun Repository.contactsForVin(ds: javax.sql.DataSource, vin: String): List<String> = ds.use { c ->
+    c.prepareStatement(
+        """select distinct s.phone_suffix from advert_sightings a
+           join seller_contacts s on s.id = a.contact_id where a.vin = ?"""
+    ).use { st ->
+        st.setString(1, vin.uppercase())
+        st.executeQuery().map { it.getString("phone_suffix") }
+    }
+}
